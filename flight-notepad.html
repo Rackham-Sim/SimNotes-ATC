@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Flight Sim Notepad</title>
+<style>
+  :root {
+    --bg: #f4f4f2;
+    --panel: #ffffff;
+    --panel-border: #d8d8d4;
+    --header-bg: #e4e4e0;
+    --header-text: #1a1a1a;
+    --header-highlight: rgba(0,0,0,0.08);
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --canvas-bg: #ffffff;
+    --canvas-border: #b8b8b4;
+    --btn-bg: #2b2b2b;
+    --btn-text: #ffffff;
+    --btn-secondary-bg: #e4e4e0;
+    --btn-secondary-text: #2b2b2b;
+    --ink-color: #1a1a1a;
+    --shadow: rgba(0,0,0,0.08);
+    --clear-btn-bg: rgba(0,0,0,0.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a;
+    --panel: #1e2126;
+    --panel-border: #3a3d42;
+    --header-bg: #0a0b0d;
+    --header-text: #f0f0f0;
+    --text: #eaeaea;
+    --text-muted: #9a9a9a;
+    --canvas-bg: #24272c;
+    --canvas-border: #4a4d52;
+    --btn-bg: #eaeaea;
+    --btn-text: #14161a;
+    --btn-secondary-bg: #3a3d42;
+    --btn-secondary-text: #eaeaea;
+    --ink-color: #f0f0f0;
+    --shadow: rgba(0,0,0,0.4);
+    --clear-btn-bg: rgba(255,255,255,0.08);
+    --header-highlight: rgba(255,255,255,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a;
+      --panel: #1e2126;
+      --panel-border: #3a3d42;
+      --header-bg: #0a0b0d;
+      --header-text: #f0f0f0;
+      --text: #eaeaea;
+      --text-muted: #9a9a9a;
+      --canvas-bg: #24272c;
+      --canvas-border: #4a4d52;
+      --btn-bg: #eaeaea;
+      --btn-text: #14161a;
+      --btn-secondary-bg: #3a3d42;
+      --btn-secondary-text: #eaeaea;
+      --ink-color: #f0f0f0;
+      --shadow: rgba(0,0,0,0.4);
+      --clear-btn-bg: rgba(255,255,255,0.08);
+      --header-highlight: rgba(255,255,255,0.08);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 8px 8px 24px;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--header-bg);
+    color: var(--header-text);
+    padding: 6px 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .topbar h1 {
+    font-size: 14px;
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .topbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  button {
+    font-family: inherit;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    touch-action: manipulation;
+  }
+  button.primary { background: var(--btn-bg); color: var(--btn-text); }
+  button:active { opacity: 0.75; }
+
+  .thickness-group { display: flex; gap: 4px; align-items: center; background: var(--header-highlight); border-radius: 20px; padding: 3px; }
+  .thickness-btn { width: 30px; height: 30px; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .thickness-btn.active { background: var(--header-text); }
+  .thickness-btn .dot { background: var(--header-text); border-radius: 50%; }
+  .thickness-btn.active .dot { background: var(--header-bg); }
+  .thickness-btn .color-dot { background: inherit; }
+  .thickness-btn.active .color-dot { border: 2px solid var(--header-text); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .panel { background: var(--panel); border: 2px solid var(--panel-border); border-radius: 12px; padding: 10px 12px; box-shadow: 0 2px 6px var(--shadow); }
+  .panel-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text); margin-bottom: 6px; border-bottom: 2px solid var(--panel-border); padding-bottom: 4px; }
+
+  /* Auto-fit grid: fields get as much room as available, fewer per row on small screens */
+  .field-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+  .sfield { display: flex; flex-direction: column; gap: 2px; }
+  .sfield-label { font-size: 9px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+  .sfield-box { position: relative; background: var(--canvas-bg); border: 1px solid var(--canvas-border); border-radius: 8px; overflow: hidden; }
+  canvas.fcanvas { display: block; width: 100%; height: 74px; touch-action: none; }
+  .fclear { position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--clear-btn-bg); color: var(--text-muted); font-size: 13px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 5; }
+
+  .load-group {
+    display: flex; flex-direction: column; gap: 6px;
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .load-group-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); }
+  .load-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .load-pair .sfield-label { font-size: 9px; }
+
+  .info-loadgrid { display: grid; gap: 8px; grid-template-columns: repeat(2, 1fr); margin-top: 6px; }
+  .load-pair canvas.fcanvas { height: 68px; }
+  @media (max-width: 480px) { .info-loadgrid { grid-template-columns: 1fr; } }
+  .compact-field canvas.fcanvas { height: 46px; }
+  .compact-row { grid-template-columns: repeat(auto-fit, minmax(110px, 220px)); }
+  .wide-field { grid-column: span 2; }
+
+  .cloud-section { margin-top: 8px; }
+  .cloud-section-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); margin-bottom: 4px; }
+  .cloud-row { display: flex; align-items: stretch; gap: 6px; margin-bottom: 6px; }
+  .cloud-labels-wrap { position: relative; flex: 1 1 auto; background: var(--canvas-bg); border: 1px solid var(--canvas-border); border-radius: 8px; height: 56px; overflow: hidden; }
+  .cloud-labels {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: space-around;
+    font-size: 14px; font-weight: 800; letter-spacing: 0.5px;
+    color: var(--text-muted);
+    pointer-events: none; user-select: none;
+  }
+  canvas.cloud-overlay { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; background: transparent; }
+  .cloud-alt-box { flex: 0 0 90px; }
+  .subblock .cloud-alt-box canvas.fcanvas { height: 56px; }
+  .subblock .cloud-labels-wrap canvas.fcanvas { height: 100%; width: 100%; }
+
+  .flight-block { flex: 1 1 100%; min-width: 280px; }
+
+  .subrow { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .subblock {
+    flex: 1 1 220px;
+    min-width: 200px;
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .subblock .field-grid { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+  .subblock canvas.fcanvas { height: 64px; }
+  .subblock .compact-field canvas.fcanvas { height: 46px; }
+
+  .canvas-panel { flex: 1 1 100%; }
+  .canvas-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .canvas-toolbar .spacer { flex: 1; }
+  canvas.notepad { width: 100%; height: 34vh; min-height: 220px; display: block; background: var(--canvas-bg); border: 1px dashed var(--canvas-border); border-radius: 8px; touch-action: none; }
+
+  .footer-note { text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 6px; }
+
+  h2.panel-title-block { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0 0 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 3px; }
+
+  .dep-block { border-left: 5px solid #2f6fed; }
+  .arr-block { border-left: 5px solid #d97706; }
+  .flight-info-block { border-left: 5px solid #2e9e5b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <h1>✈️ Flight Sim Notepad</h1>
+    <div class="topbar-row">
+      <div class="thickness-group" id="globalThickness">
+        <button class="thickness-btn" data-size="2"><span class="dot" style="width:5px;height:5px;"></span></button>
+        <button class="thickness-btn active" data-size="4"><span class="dot" style="width:8px;height:8px;"></span></button>
+        <button class="thickness-btn" data-size="7"><span class="dot" style="width:12px;height:12px;"></span></button>
+        <button class="thickness-btn" data-size="12"><span class="dot" style="width:17px;height:17px;"></span></button>
+      </div>
+      <div class="thickness-group" id="globalColor">
+        <button class="thickness-btn active" data-color="auto"><span class="dot color-dot" style="width:16px;height:16px;background:#1a1a1a;"></span></button>
+        <button class="thickness-btn" data-color="#d62828"><span class="dot color-dot" style="width:16px;height:16px;background:#d62828;"></span></button>
+      </div>
+      <button id="themeToggle">🌙 Night</button>
+      <button id="newFlightBtn" class="primary">🆕 New flight</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="panel info-panel flight-info-block" style="flex:1 1 100%;">
+      <div class="panel-title">Flight</div>
+      <div class="subblock">
+        <div class="field-grid compact-row">
+          <div class="sfield compact-field"><div class="sfield-label">Callsign</div><div class="sfield-box"><canvas class="fcanvas" data-field="callsign"></canvas><button class="fclear" data-clear-field="callsign">✕</button></div></div>
+          <div class="sfield compact-field"><div class="sfield-label">Aircraft</div><div class="sfield-box"><canvas class="fcanvas" data-field="aircraft"></canvas><button class="fclear" data-clear-field="aircraft">✕</button></div></div>
+        </div>
+      </div>
+
+      <div class="info-loadgrid">
+        <div class="load-group">
+          <div class="load-group-title">Pax</div>
+          <div class="load-pair">
+            <div class="sfield"><div class="sfield-label">Planned</div><div class="sfield-box"><canvas class="fcanvas" data-field="paxPlanned"></canvas><button class="fclear" data-clear-field="paxPlanned">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Actual</div><div class="sfield-box"><canvas class="fcanvas" data-field="paxActual"></canvas><button class="fclear" data-clear-field="paxActual">✕</button></div></div>
+          </div>
+        </div>
+        <div class="load-group">
+          <div class="load-group-title">Cargo</div>
+          <div class="load-pair">
+            <div class="sfield"><div class="sfield-label">Planned</div><div class="sfield-box"><canvas class="fcanvas" data-field="cargoPlanned"></canvas><button class="fclear" data-clear-field="cargoPlanned">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Actual</div><div class="sfield-box"><canvas class="fcanvas" data-field="cargoActual"></canvas><button class="fclear" data-clear-field="cargoActual">✕</button></div></div>
+          </div>
+        </div>
+        <div class="load-group">
+          <div class="load-group-title">Fuel</div>
+          <div class="load-pair">
+            <div class="sfield"><div class="sfield-label">Planned</div><div class="sfield-box"><canvas class="fcanvas" data-field="fuelPlanned"></canvas><button class="fclear" data-clear-field="fuelPlanned">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Actual</div><div class="sfield-box"><canvas class="fcanvas" data-field="fuelActual"></canvas><button class="fclear" data-clear-field="fuelActual">✕</button></div></div>
+          </div>
+        </div>
+        <div class="load-group">
+          <div class="load-group-title">Weight</div>
+          <div class="load-pair">
+            <div class="sfield"><div class="sfield-label">Planned</div><div class="sfield-box"><canvas class="fcanvas" data-field="weightPlanned"></canvas><button class="fclear" data-clear-field="weightPlanned">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Actual</div><div class="sfield-box"><canvas class="fcanvas" data-field="weightActual"></canvas><button class="fclear" data-clear-field="weightActual">✕</button></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="panel flight-block dep-block">
+      <div class="panel-title">🛫 Departure</div>
+
+      <div class="subrow">
+        <div class="subblock">
+          <h2 class="panel-title-block" style="margin-top:0;">Info</h2>
+          <div class="field-grid">
+            <div class="sfield"><div class="sfield-label">ICAO</div><div class="sfield-box"><canvas class="fcanvas" data-field="depIcao"></canvas><button class="fclear" data-clear-field="depIcao">✕</button></div></div>
+            <div class="sfield wide-field"><div class="sfield-label">City</div><div class="sfield-box"><canvas class="fcanvas" data-field="depCity"></canvas><button class="fclear" data-clear-field="depCity">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Parking</div><div class="sfield-box"><canvas class="fcanvas" data-field="depParking"></canvas><button class="fclear" data-clear-field="depParking">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Sched Time</div><div class="sfield-box"><canvas class="fcanvas" data-field="depSchd"></canvas><button class="fclear" data-clear-field="depSchd">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Actual Time</div><div class="sfield-box"><canvas class="fcanvas" data-field="depActual"></canvas><button class="fclear" data-clear-field="depActual">✕</button></div></div>
+          </div>
+        </div>
+        <div class="subblock">
+          <h2 class="panel-title-block" style="margin-top:0;">Frequencies</h2>
+          <div class="field-grid">
+            <div class="sfield"><div class="sfield-label">ATIS</div><div class="sfield-box"><canvas class="fcanvas" data-field="depFreqAtis"></canvas><button class="fclear" data-clear-field="depFreqAtis">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Clearance</div><div class="sfield-box"><canvas class="fcanvas" data-field="depFreqClr"></canvas><button class="fclear" data-clear-field="depFreqClr">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Ground</div><div class="sfield-box"><canvas class="fcanvas" data-field="depFreqGnd"></canvas><button class="fclear" data-clear-field="depFreqGnd">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Tower</div><div class="sfield-box"><canvas class="fcanvas" data-field="depFreqTwr"></canvas><button class="fclear" data-clear-field="depFreqTwr">✕</button></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subrow">
+        <div class="subblock">
+          <h2 class="panel-title-block">ATIS</h2>
+          <div class="field-grid">
+            <div class="sfield"><div class="sfield-label">Wind</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisWind"></canvas><button class="fclear" data-clear-field="depAtisWind">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">QNH</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisQnh"></canvas><button class="fclear" data-clear-field="depAtisQnh">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Temp</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisTemp"></canvas><button class="fclear" data-clear-field="depAtisTemp">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Active Rwy</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisRwy"></canvas><button class="fclear" data-clear-field="depAtisRwy">✕</button></div></div>
+          </div>
+
+          <div class="cloud-section">
+            <div class="cloud-section-title">Cloud Layers (circle + altitude)</div>
+            <div class="cloud-row">
+              <div class="cloud-labels-wrap">
+                <div class="cloud-labels"><span>SKC</span><span>FEW</span><span>SCT</span><span>BKN</span><span>OVC</span></div>
+                <canvas class="fcanvas cloud-overlay" data-field="depCloud1Circle"></canvas>
+                <button class="fclear" data-clear-field="depCloud1Circle">✕</button>
+              </div>
+              <div class="cloud-alt-box sfield-box"><canvas class="fcanvas" data-field="depCloud1Alt"></canvas><button class="fclear" data-clear-field="depCloud1Alt">✕</button></div>
+            </div>
+            <div class="cloud-row">
+              <div class="cloud-labels-wrap">
+                <div class="cloud-labels"><span>SKC</span><span>FEW</span><span>SCT</span><span>BKN</span><span>OVC</span></div>
+                <canvas class="fcanvas cloud-overlay" data-field="depCloud2Circle"></canvas>
+                <button class="fclear" data-clear-field="depCloud2Circle">✕</button>
+              </div>
+              <div class="cloud-alt-box sfield-box"><canvas class="fcanvas" data-field="depCloud2Alt"></canvas><button class="fclear" data-clear-field="depCloud2Alt">✕</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="subblock">
+          <h2 class="panel-title-block">Clearance</h2>
+          <div class="field-grid">
+            <div class="sfield"><div class="sfield-label">SID</div><div class="sfield-box"><canvas class="fcanvas" data-field="depSid"></canvas><button class="fclear" data-clear-field="depSid">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Rwy</div><div class="sfield-box"><canvas class="fcanvas" data-field="depRwy"></canvas><button class="fclear" data-clear-field="depRwy">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Alt</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAlt"></canvas><button class="fclear" data-clear-field="depAlt">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Freq</div><div class="sfield-box"><canvas class="fcanvas" data-field="depFreq"></canvas><button class="fclear" data-clear-field="depFreq">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Squawk</div><div class="sfield-box"><canvas class="fcanvas" data-field="depXpdr"></canvas><button class="fclear" data-clear-field="depXpdr">✕</button></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel flight-block arr-block">
+      <div class="panel-title">🛬 Arrival</div>
+
+      <div class="subrow">
+        <div class="subblock">
+          <h2 class="panel-title-block" style="margin-top:0;">Info</h2>
+          <div class="field-grid">
+            <div class="sfield"><div class="sfield-label">ICAO</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrIcao"></canvas><button class="fclear" data-clear-field="arrIcao">✕</button></div></div>
+            <div class="sfield wide-field"><div class="sfield-label">City</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrCity"></canvas><button class="fclear" data-clear-field="arrCity">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Sched Time</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrSchd"></canvas><button class="fclear" data-clear-field="arrSchd">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Actual Time</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrActual"></canvas><button class="fclear" data-clear-field="arrActual">✕</button></div></div>
+          </div>
+        </div>
+        <div class="subblock">
+          <h2 class="panel-title-block" style="margin-top:0;">Frequencies</h2>
+          <div class="field-grid">
+            <div class="sfield"><div class="sfield-label">ATIS</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrFreqAtis"></canvas><button class="fclear" data-clear-field="arrFreqAtis">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Approach</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrFreqApr"></canvas><button class="fclear" data-clear-field="arrFreqApr">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Ground</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrFreqGnd"></canvas><button class="fclear" data-clear-field="arrFreqGnd">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Tower</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrFreqTwr"></canvas><button class="fclear" data-clear-field="arrFreqTwr">✕</button></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subrow">
+        <div class="subblock">
+          <h2 class="panel-title-block">ATIS</h2>
+          <div class="field-grid">
+            <div class="sfield"><div class="sfield-label">Wind</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisWind"></canvas><button class="fclear" data-clear-field="arrAtisWind">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">QNH</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisQnh"></canvas><button class="fclear" data-clear-field="arrAtisQnh">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Temp</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisTemp"></canvas><button class="fclear" data-clear-field="arrAtisTemp">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Active Rwy</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisRwy"></canvas><button class="fclear" data-clear-field="arrAtisRwy">✕</button></div></div>
+          </div>
+
+          <div class="cloud-section">
+            <div class="cloud-section-title">Cloud Layers (circle + altitude)</div>
+            <div class="cloud-row">
+              <div class="cloud-labels-wrap">
+                <div class="cloud-labels"><span>SKC</span><span>FEW</span><span>SCT</span><span>BKN</span><span>OVC</span></div>
+                <canvas class="fcanvas cloud-overlay" data-field="arrCloud1Circle"></canvas>
+                <button class="fclear" data-clear-field="arrCloud1Circle">✕</button>
+              </div>
+              <div class="cloud-alt-box sfield-box"><canvas class="fcanvas" data-field="arrCloud1Alt"></canvas><button class="fclear" data-clear-field="arrCloud1Alt">✕</button></div>
+            </div>
+            <div class="cloud-row">
+              <div class="cloud-labels-wrap">
+                <div class="cloud-labels"><span>SKC</span><span>FEW</span><span>SCT</span><span>BKN</span><span>OVC</span></div>
+                <canvas class="fcanvas cloud-overlay" data-field="arrCloud2Circle"></canvas>
+                <button class="fclear" data-clear-field="arrCloud2Circle">✕</button>
+              </div>
+              <div class="cloud-alt-box sfield-box"><canvas class="fcanvas" data-field="arrCloud2Alt"></canvas><button class="fclear" data-clear-field="arrCloud2Alt">✕</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="subblock">
+          <h2 class="panel-title-block">Approach</h2>
+          <div class="field-grid">
+            <div class="sfield"><div class="sfield-label">STAR</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrStar"></canvas><button class="fclear" data-clear-field="arrStar">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Rwy</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrRwy"></canvas><button class="fclear" data-clear-field="arrRwy">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Alt</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAlt"></canvas><button class="fclear" data-clear-field="arrAlt">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Freq</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrFreq"></canvas><button class="fclear" data-clear-field="arrFreq">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Squawk</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrXpdr"></canvas><button class="fclear" data-clear-field="arrXpdr">✕</button></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="panel canvas-panel">
+      <div class="canvas-toolbar">
+        <div class="panel-title" style="margin:0;border:none;padding:0;">✏️ Notes</div>
+        <div class="spacer"></div>
+        <button data-undo="1">↩️ Undo</button>
+        <button data-clear="1">🗑️ Clear</button>
+      </div>
+      <canvas class="notepad" id="canvas1"></canvas>
+    </div>
+  </div>
+
+  <div class="footer-note">Flight Sim Notepad — stylus only — autosaved in this browser</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var globalSize = 4;
+  var globalColor = "auto"; // "auto" = follows day/night ink color, or a fixed hex like red
+  var allRedraws = [];
+
+  /* Custom confirm dialog (native confirm() is blocked inside the published artifact sandbox) */
+  function showConfirm(message, onYes) {
+    var overlay = document.createElement("div");
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;";
+    var box = document.createElement("div");
+    box.style.cssText = "background:var(--panel);color:var(--text);border-radius:12px;padding:18px;max-width:320px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.3);";
+    var msg = document.createElement("div");
+    msg.textContent = message;
+    msg.style.cssText = "font-size:14px;margin-bottom:16px;line-height:1.4;";
+    var btnRow = document.createElement("div");
+    btnRow.style.cssText = "display:flex;gap:8px;justify-content:flex-end;";
+    var cancelBtn = document.createElement("button");
+    cancelBtn.textContent = "Cancel";
+    var okBtn = document.createElement("button");
+    okBtn.textContent = "OK";
+    okBtn.className = "primary";
+    cancelBtn.addEventListener("click", function(){ document.body.removeChild(overlay); });
+    okBtn.addEventListener("click", function(){ document.body.removeChild(overlay); onYes(); });
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(okBtn);
+    box.appendChild(msg);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  }
+
+  var themeBtn = document.getElementById("themeToggle");
+  function applyTheme(theme) {
+    if (theme === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+      themeBtn.textContent = "☀️ Day";
+    } else if (theme === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+      themeBtn.textContent = "🌙 Night";
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      themeBtn.textContent = "🌙 Night";
+    }
+    allRedraws.forEach(function(fn){ fn(); });
+  }
+  var savedTheme = null;
+  try { savedTheme = localStorage.getItem("flightNotepadTheme"); } catch(e) {}
+  themeBtn.addEventListener("click", function(){
+    var current = document.documentElement.getAttribute("data-theme");
+    var next = (current === "dark") ? "light" : "dark";
+    applyTheme(next);
+    try { localStorage.setItem("flightNotepadTheme", next); } catch(e) {}
+  });
+
+  function createStylusCanvas(canvas, storageKey) {
+    var ctx = canvas.getContext("2d");
+    var drawing = false;
+    var strokes = [];
+    var currentStroke = null;
+
+    function getInkColor() {
+      return getComputedStyle(document.documentElement).getPropertyValue("--ink-color").trim() || "#1a1a1a";
+    }
+    function resizeCanvas() {
+      var rect = canvas.getBoundingClientRect();
+      var ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.round(rect.width * ratio));
+      canvas.height = Math.max(1, Math.round(rect.height * ratio));
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      redraw();
+    }
+    function redraw() {
+      var rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      var autoColor = getInkColor();
+      strokes.forEach(function(stroke){
+        if (stroke.points.length < 1) return;
+        ctx.strokeStyle = (stroke.color && stroke.color !== "auto") ? stroke.color : autoColor;
+        ctx.lineWidth = stroke.size;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (var i = 1; i < stroke.points.length; i++) {
+          ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        ctx.stroke();
+      });
+    }
+    function getPos(evt) {
+      var rect = canvas.getBoundingClientRect();
+      return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+    }
+    function isAllowedPointer(evt) {
+      // Palm rejection: only draw with stylus (pen) or mouse; ignore bare touch (finger/palm).
+      return evt.pointerType === "pen" || evt.pointerType === "mouse";
+    }
+    function startDraw(evt) {
+      if (!isAllowedPointer(evt)) return;
+      evt.preventDefault();
+      drawing = true;
+      var pos = getPos(evt);
+      currentStroke = { points: [pos], size: globalSize, color: globalColor };
+      strokes.push(currentStroke);
+    }
+    function moveDraw(evt) {
+      if (!drawing || !isAllowedPointer(evt)) return;
+      evt.preventDefault();
+      var pos = getPos(evt);
+      currentStroke.points.push(pos);
+      redraw();
+    }
+    function endDraw(evt) {
+      if (!drawing) return;
+      drawing = false;
+      currentStroke = null;
+      persist();
+    }
+    canvas.addEventListener("pointerdown", startDraw);
+    canvas.addEventListener("pointermove", moveDraw);
+    window.addEventListener("pointerup", endDraw);
+    window.addEventListener("pointercancel", endDraw);
+
+    function persist() { try { localStorage.setItem(storageKey, JSON.stringify(strokes)); } catch(e) {} }
+    function load() {
+      try {
+        var raw = localStorage.getItem(storageKey);
+        if (raw) strokes = JSON.parse(raw) || [];
+      } catch(e) { strokes = []; }
+    }
+    function undo() { strokes.pop(); redraw(); persist(); }
+    function clearAll() { strokes = []; redraw(); persist(); }
+
+    load();
+    window.addEventListener("resize", resizeCanvas);
+    allRedraws.push(redraw);
+    setTimeout(resizeCanvas, 50);
+
+    return { undo: undo, clear: clearAll, resize: resizeCanvas };
+  }
+
+  var fieldCanvases = {};
+  document.querySelectorAll(".fcanvas").forEach(function(canvasEl){
+    var key = canvasEl.getAttribute("data-field");
+    fieldCanvases[key] = createStylusCanvas(canvasEl, "flightNotepadField_" + key);
+  });
+  document.querySelectorAll("[data-clear-field]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      fieldCanvases[btn.getAttribute("data-clear-field")].clear();
+    });
+  });
+
+  var canvas1 = createStylusCanvas(document.getElementById("canvas1"), "flightNotepadCanvas1_v2");
+  var bigCanvases = { "1": canvas1 };
+
+  document.querySelectorAll("[data-undo]").forEach(function(btn){
+    btn.addEventListener("click", function(){ bigCanvases[btn.getAttribute("data-undo")].undo(); });
+  });
+  document.querySelectorAll("[data-clear]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-clear");
+      showConfirm("Clear this notes area?", function(){ bigCanvases[key].clear(); });
+    });
+  });
+
+  var thicknessGroup = document.getElementById("globalThickness");
+  thicknessGroup.querySelectorAll(".thickness-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      thicknessGroup.querySelectorAll(".thickness-btn").forEach(function(b){ b.classList.remove("active"); });
+      btn.classList.add("active");
+      globalSize = parseInt(btn.getAttribute("data-size"), 10);
+    });
+  });
+
+  var colorGroup = document.getElementById("globalColor");
+  colorGroup.querySelectorAll(".thickness-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      colorGroup.querySelectorAll(".thickness-btn").forEach(function(b){ b.classList.remove("active"); });
+      btn.classList.add("active");
+      globalColor = btn.getAttribute("data-color");
+    });
+  });
+
+  document.getElementById("newFlightBtn").addEventListener("click", function(){
+    showConfirm("New flight: this will clear ALL fields and notes. Continue?", function(){
+      Object.keys(fieldCanvases).forEach(function(key){ fieldCanvases[key].clear(); });
+      canvas1.clear();
+    });
+  });
+
+  applyTheme(savedTheme);
+
+})();
+</script>
+</body>
+</html>
