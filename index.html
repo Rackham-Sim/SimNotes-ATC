@@ -161,16 +161,17 @@
   .cloud-section { margin-top: 8px; }
   .cloud-section-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); margin-bottom: 4px; }
   .cloud-row { display: flex; align-items: stretch; gap: 6px; margin-bottom: 6px; }
-  .cloud-labels-wrap { position: relative; flex: 1 1 auto; background: var(--canvas-bg); border: 1px solid var(--canvas-border); border-radius: 8px; height: 56px; overflow: hidden; }
+  .cloud-labels-wrap { position: relative; flex: 1 1 240px; background: var(--canvas-bg); border: 1px solid var(--canvas-border); border-radius: 8px; height: 56px; overflow: hidden; }
   .cloud-labels {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: space-around;
-    font-size: 14px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 0 8px;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.3px;
     color: var(--text-muted);
     pointer-events: none; user-select: none;
   }
   canvas.cloud-overlay { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; background: transparent; }
-  .cloud-alt-box { flex: 0 0 90px; }
+  .cloud-alt-box { flex: 0 0 120px; }
   .subblock .cloud-alt-box canvas.fcanvas { height: 56px; }
   .subblock .cloud-labels-wrap canvas.fcanvas { height: 100%; width: 100%; }
 
