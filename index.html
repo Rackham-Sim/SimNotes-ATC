@@ -72,7 +72,14 @@
     background: var(--bg);
     color: var(--text);
     width: 100%;
-    overflow-x: hidden;
+    height: 100%;
+    overflow: hidden;
+  }
+  #scrollArea {
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .wrap {
     max-width: 1400px;
@@ -205,6 +212,7 @@
 </style>
 </head>
 <body>
+<div id="scrollArea">
 <div class="wrap">
 
   <div class="topbar">
@@ -232,6 +240,8 @@
         <div class="field-grid compact-row">
           <div class="sfield compact-field"><div class="sfield-label">Callsign</div><div class="sfield-box"><canvas class="fcanvas" data-field="callsign"></canvas><button class="fclear" data-clear-field="callsign">✕</button></div></div>
           <div class="sfield compact-field"><div class="sfield-label">Aircraft</div><div class="sfield-box"><canvas class="fcanvas" data-field="aircraft"></canvas><button class="fclear" data-clear-field="aircraft">✕</button></div></div>
+          <div class="sfield compact-field"><div class="sfield-label">Planned FL</div><div class="sfield-box"><canvas class="fcanvas" data-field="plannedFl"></canvas><button class="fclear" data-clear-field="plannedFl">✕</button></div></div>
+          <div class="sfield compact-field"><div class="sfield-label">Cost Index</div><div class="sfield-box"><canvas class="fcanvas" data-field="costIndex"></canvas><button class="fclear" data-clear-field="costIndex">✕</button></div></div>
         </div>
       </div>
 
@@ -279,8 +289,8 @@
             <div class="sfield"><div class="sfield-label">ICAO</div><div class="sfield-box"><canvas class="fcanvas" data-field="depIcao"></canvas><button class="fclear" data-clear-field="depIcao">✕</button></div></div>
             <div class="sfield wide-field"><div class="sfield-label">City</div><div class="sfield-box"><canvas class="fcanvas" data-field="depCity"></canvas><button class="fclear" data-clear-field="depCity">✕</button></div></div>
             <div class="sfield"><div class="sfield-label">Parking</div><div class="sfield-box"><canvas class="fcanvas" data-field="depParking"></canvas><button class="fclear" data-clear-field="depParking">✕</button></div></div>
-            <div class="sfield"><div class="sfield-label">Sched Time</div><div class="sfield-box"><canvas class="fcanvas" data-field="depSchd"></canvas><button class="fclear" data-clear-field="depSchd">✕</button></div></div>
-            <div class="sfield"><div class="sfield-label">Actual Time</div><div class="sfield-box"><canvas class="fcanvas" data-field="depActual"></canvas><button class="fclear" data-clear-field="depActual">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Sched Block Off</div><div class="sfield-box"><canvas class="fcanvas" data-field="depSchd"></canvas><button class="fclear" data-clear-field="depSchd">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Actual Block Off</div><div class="sfield-box"><canvas class="fcanvas" data-field="depActual"></canvas><button class="fclear" data-clear-field="depActual">✕</button></div></div>
           </div>
         </div>
         <div class="subblock">
@@ -298,10 +308,9 @@
         <div class="subblock">
           <h2 class="panel-title-block">ATIS</h2>
           <div class="field-grid">
-            <div class="sfield"><div class="sfield-label">Wind</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisWind"></canvas><button class="fclear" data-clear-field="depAtisWind">✕</button></div></div>
-            <div class="sfield"><div class="sfield-label">QNH</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisQnh"></canvas><button class="fclear" data-clear-field="depAtisQnh">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Information</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisInfo"></canvas><button class="fclear" data-clear-field="depAtisInfo">✕</button></div></div>
             <div class="sfield"><div class="sfield-label">Temp</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisTemp"></canvas><button class="fclear" data-clear-field="depAtisTemp">✕</button></div></div>
-            <div class="sfield"><div class="sfield-label">Active Rwy</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisRwy"></canvas><button class="fclear" data-clear-field="depAtisRwy">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">QNH</div><div class="sfield-box"><canvas class="fcanvas" data-field="depAtisQnh"></canvas><button class="fclear" data-clear-field="depAtisQnh">✕</button></div></div>
           </div>
 
           <div class="cloud-section">
@@ -346,8 +355,8 @@
           <div class="field-grid">
             <div class="sfield"><div class="sfield-label">ICAO</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrIcao"></canvas><button class="fclear" data-clear-field="arrIcao">✕</button></div></div>
             <div class="sfield wide-field"><div class="sfield-label">City</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrCity"></canvas><button class="fclear" data-clear-field="arrCity">✕</button></div></div>
-            <div class="sfield"><div class="sfield-label">Sched Time</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrSchd"></canvas><button class="fclear" data-clear-field="arrSchd">✕</button></div></div>
-            <div class="sfield"><div class="sfield-label">Actual Time</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrActual"></canvas><button class="fclear" data-clear-field="arrActual">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Sched Block On</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrSchd"></canvas><button class="fclear" data-clear-field="arrSchd">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Actual Block On</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrActual"></canvas><button class="fclear" data-clear-field="arrActual">✕</button></div></div>
           </div>
         </div>
         <div class="subblock">
@@ -365,10 +374,9 @@
         <div class="subblock">
           <h2 class="panel-title-block">ATIS</h2>
           <div class="field-grid">
-            <div class="sfield"><div class="sfield-label">Wind</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisWind"></canvas><button class="fclear" data-clear-field="arrAtisWind">✕</button></div></div>
-            <div class="sfield"><div class="sfield-label">QNH</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisQnh"></canvas><button class="fclear" data-clear-field="arrAtisQnh">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">Information</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisInfo"></canvas><button class="fclear" data-clear-field="arrAtisInfo">✕</button></div></div>
             <div class="sfield"><div class="sfield-label">Temp</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisTemp"></canvas><button class="fclear" data-clear-field="arrAtisTemp">✕</button></div></div>
-            <div class="sfield"><div class="sfield-label">Active Rwy</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisRwy"></canvas><button class="fclear" data-clear-field="arrAtisRwy">✕</button></div></div>
+            <div class="sfield"><div class="sfield-label">QNH</div><div class="sfield-box"><canvas class="fcanvas" data-field="arrAtisQnh"></canvas><button class="fclear" data-clear-field="arrAtisQnh">✕</button></div></div>
           </div>
 
           <div class="cloud-section">
@@ -418,6 +426,7 @@
   </div>
 
   <div class="footer-note">Flight Sim Notepad — stylus only — autosaved in this browser</div>
+</div>
 </div>
 
 <script>
