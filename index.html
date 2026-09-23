@@ -80,6 +80,7 @@
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    scroll-padding-top: 66px;
   }
   .wrap {
     max-width: 1400px;
@@ -204,6 +205,8 @@
 
   .footer-note { text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 6px; }
 
+  .nav-btn { font-size: 16px; }
+
   h2.panel-title-block { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0 0 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 3px; }
 
   .dep-block { border-left: 5px solid #2f6fed; }
@@ -218,6 +221,11 @@
   <div class="topbar">
     <h1>✈️ Flight Sim Notepad</h1>
     <div class="topbar-row">
+      <div class="thickness-group" id="sectionNav">
+        <button class="thickness-btn nav-btn" data-goto="section-flight" title="Flight">✈️</button>
+        <button class="thickness-btn nav-btn" data-goto="section-dep" title="Departure">🛫</button>
+        <button class="thickness-btn nav-btn" data-goto="section-arr" title="Arrival">🛬</button>
+      </div>
       <div class="thickness-group" id="globalThickness">
         <button class="thickness-btn" data-size="2"><span class="dot" style="width:5px;height:5px;"></span></button>
         <button class="thickness-btn active" data-size="4"><span class="dot" style="width:8px;height:8px;"></span></button>
@@ -228,13 +236,13 @@
         <button class="thickness-btn active" data-color="auto"><span class="dot color-dot" style="width:16px;height:16px;background:#1a1a1a;"></span></button>
         <button class="thickness-btn" data-color="#d62828"><span class="dot color-dot" style="width:16px;height:16px;background:#d62828;"></span></button>
       </div>
-      <button id="themeToggle">🌙 Night</button>
+      <button id="themeToggle" title="Toggle day/night" style="padding:7px 9px;">🌙</button>
       <button id="newFlightBtn" class="primary">🆕 New flight</button>
     </div>
   </div>
 
   <div class="row">
-    <div class="panel info-panel flight-info-block" style="flex:1 1 100%;">
+    <div class="panel info-panel flight-info-block" id="section-flight" style="flex:1 1 100%;">
       <div class="panel-title">Flight</div>
       <div class="subblock">
         <div class="field-grid compact-row">
@@ -279,7 +287,7 @@
   </div>
 
   <div class="row">
-    <div class="panel flight-block dep-block">
+    <div class="panel flight-block dep-block" id="section-dep">
       <div class="panel-title">🛫 Departure</div>
 
       <div class="subrow">
@@ -347,7 +355,7 @@
       </div>
     </div>
 
-    <div class="panel flight-block arr-block">
+    <div class="panel flight-block arr-block" id="section-arr">
       <div class="panel-title">🛬 Arrival</div>
 
       <div class="subrow">
@@ -468,13 +476,13 @@
   function applyTheme(theme) {
     if (theme === "dark") {
       document.documentElement.setAttribute("data-theme", "dark");
-      themeBtn.textContent = "☀️ Day";
+      themeBtn.textContent = "☀️";
     } else if (theme === "light") {
       document.documentElement.setAttribute("data-theme", "light");
-      themeBtn.textContent = "🌙 Night";
+      themeBtn.textContent = "🌙";
     } else {
       document.documentElement.removeAttribute("data-theme");
-      themeBtn.textContent = "🌙 Night";
+      themeBtn.textContent = "🌙";
     }
     allRedraws.forEach(function(fn){ fn(); });
   }
@@ -624,6 +632,13 @@
   });
 
   applyTheme(savedTheme);
+
+  document.querySelectorAll("[data-goto]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var target = document.getElementById(btn.getAttribute("data-goto"));
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
 
 })();
 </script>
